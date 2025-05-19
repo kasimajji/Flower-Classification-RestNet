@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/kasimajji/Desktop/Projects/Flower_classification_Deep%20learning/mlruns/200404991946074660/48a31dd81249448aa9ec298cca44fa86/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '200404991946074660'
+lifecycle_stage: active
+run_id: 48a31dd81249448aa9ec298cca44fa86
+run_name: intelligent-eel-228
+run_uuid: 48a31dd81249448aa9ec298cca44fa86
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747628100923
+status: 1
+tags: []
+user_id: kasimajji

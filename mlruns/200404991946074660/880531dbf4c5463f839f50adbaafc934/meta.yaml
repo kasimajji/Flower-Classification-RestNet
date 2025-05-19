@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/kasimajji/Desktop/Projects/Flower_classification_Deep%20learning/mlruns/200404991946074660/880531dbf4c5463f839f50adbaafc934/artifacts
+end_time: 1747624713367
+entry_point_name: ''
+experiment_id: '200404991946074660'
+lifecycle_stage: active
+run_id: 880531dbf4c5463f839f50adbaafc934
+run_name: capable-horse-153
+run_uuid: 880531dbf4c5463f839f50adbaafc934
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747620811064
+status: 3
+tags: []
+user_id: kasimajji
