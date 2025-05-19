@@ -225,48 +225,60 @@ class_names = ['daisy', 'dandelion', 'rose', 'sunflower', 'tulip']
 @st.cache_resource
 def load_model():
     try:
-        # Load the model directly using PyTorch instead of MLflow
-        import torch
-        import torchvision.models.resnet
-        from torchvision.models import resnet50
+        # Define the model architecture (ResNet50)
+        model = models.resnet50(pretrained=False)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Sequential(
+            nn.Dropout(0.5),
+            nn.Linear(num_ftrs, 512),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(512, len(class_names))
+        )
         
-        # Add the ResNet class to safe globals for PyTorch 2.6+ compatibility
-        torch.serialization.add_safe_globals([torchvision.models.resnet.ResNet])
+        # Try multiple possible model paths (for both local and deployment environments)
+        possible_paths = [
+            # Local path
+            "/Users/kasimajji/Desktop/Projects/Flower_classification_Deep learning/mlruns/200404991946074660/555ee7a0085f4f7dbe9b47627e3f949/artifacts/best_model/data/model.pth",
+            # Deployment paths (relative)
+            "model.pth",
+            "./model.pth",
+            "./models/model.pth",
+            "./data/model.pth"
+        ]
         
-        model_path = os.path.join(MODEL_PATH, "data", "model.pth")
+        # Try each path until we find the model
+        model_loaded = False
+        for path in possible_paths:
+            if os.path.exists(path):
+                try:
+                    st.success(f"Found model at: {path}")
+                    model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
+                    model_loaded = True
+                    break
+                except Exception as path_error:
+                    st.info(f"Found file at {path} but couldn't load it: {path_error}")
         
-        # Try to load the entire model first
-        try:
-            # Option 1: Try loading with weights_only=False (only if you trust the source)
-            model = torch.load(model_path, weights_only=False)
-        except Exception as inner_e:
-            st.warning(f"Could not load full model: {inner_e}")
-            st.info("Attempting to load with ResNet50 architecture...")
-            
-            # Option 2: Create the architecture and load state dict
-            model = resnet50()
-            
-            # Modify the final layer to match our number of classes
-            num_classes = len(class_names)
-            model.fc = nn.Linear(model.fc.in_features, num_classes)
-            
-            # Try loading just the state dict
-            try:
-                state_dict = torch.load(model_path, weights_only=True)
-                model.load_state_dict(state_dict)
-            except Exception as state_dict_e:
-                st.warning(f"Could not load state dict: {state_dict_e}")
-                
-                # Try using MLflow's PyTorch module as a last resort
-                st.info("Attempting to load with MLflow...")
-                model = mlflow.pytorch.load_model(MODEL_PATH)
+        # If model couldn't be loaded, just use the initialized model for demo
+        if not model_loaded:
+            st.warning("Could not load saved model. Using a randomly initialized model for demo purposes.")
         
+        # Set the model to evaluation mode
         model.eval()
         return model
     except Exception as e:
-        st.error(f"Error loading model: {e}")
-        st.error(f"Details: {str(e)}")
-        return None
+        st.error(f"Error in model loading process: {e}")
+        # For deployment, return a basic model rather than None
+        try:
+            model = models.resnet50(pretrained=False)
+            num_ftrs = model.fc.in_features
+            model.fc = nn.Linear(num_ftrs, len(class_names))
+            model.eval()
+            st.warning("Using fallback model for demonstration")
+            return model
+        except Exception as fallback_error:
+            st.error(f"Even fallback model failed: {fallback_error}")
+            return None
 
 # Image preprocessing function
 def preprocess_image(image):
